@@ -277,7 +277,7 @@ cryptonight_ctx* cryptonight_alloc_ctx(size_t use_fast_mem, size_t use_mlock, al
 #if defined(__sun__)
     (caddr_t)
 #endif
-    ptr->long_state, MEMORY, MADV_RANDOM|MADV_WILLNEED) != 0)
+    ptr->long_state, hashMemSize, MADV_RANDOM|MADV_WILLNEED) != 0)
     msg->warning = "madvise failed";
 
 	ptr->ctx_info[1] = 0;
