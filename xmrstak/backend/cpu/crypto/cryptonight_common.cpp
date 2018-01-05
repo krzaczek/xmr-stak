@@ -257,7 +257,7 @@ cryptonight_ctx* cryptonight_alloc_ctx(size_t use_fast_mem, size_t use_mlock, al
 #elif defined(__sun__)
     int fd = open("/dev/zero", O_RDWR);
     fcntl(fd, F_SETFD, FD_CLOEXEC);
-    ptr->long_state = (uint8_t*)mmap(0, MEMORY, PROT_READ | PROT_WRITE,
+    ptr->long_state = (uint8_t*)mmap(0, hashMemSize, PROT_READ | PROT_WRITE,
                     MAP_PRIVATE, fd, 0);
 #else
 	ptr->long_state = (uint8_t*)mmap(0, hashMemSize, PROT_READ | PROT_WRITE,
