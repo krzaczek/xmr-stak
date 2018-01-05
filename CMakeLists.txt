@@ -387,6 +387,10 @@ if(WIN32)
     set(LIBS ${LIBS} wsock32 ws2_32)
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "(SunOS|Solaris)")
+  set(LIBS ${LIBS} socket)
+endif()
+
 ################################################################################
 # Versioning
 ################################################################################
@@ -433,8 +437,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     add_definitions(-DNOMINMAX)
 else()
     # activate sse2 and aes-ni
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -maes")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -maes")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse2 -maes -m64")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -msse2 -maes -m64")
 
 endif()
 

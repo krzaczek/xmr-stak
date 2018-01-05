@@ -225,18 +225,21 @@ bool jpsock::jpsock_thd_main()
 
 	executor::inst()->push_event(ex_event(EV_SOCK_READY, pool_id));
 
-	char buf[iSockBufferSize];
-	size_t datalen = 0;
+	//char buf[iSockBufferSize];
+    std::shared_ptr<char> ptr((char*)malloc(iSockBufferSize), &free);
+    char* buf = ptr.get();
+
+    size_t datalen = 0;
 	while (true)
 	{
-		int ret = sck->recv(buf + datalen, sizeof(buf) - datalen);
+		int ret = sck->recv(buf + datalen, iSockBufferSize - datalen);
 
 		if(ret <= 0)
 			return false;
 
 		datalen += ret;
 
-		if (datalen >= sizeof(buf))
+		if (datalen >= iSockBufferSize)
 		{
 			sck->close(false);
 			return set_socket_error("RECEIVE error: data overflow");

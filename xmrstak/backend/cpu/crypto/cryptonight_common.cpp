@@ -54,6 +54,13 @@ extern "C"
 #include <string.h>
 #endif // _WIN32
 
+#if defined(__sun__)
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <fcntl.h>
+extern "C" int madvise(caddr_t, size_t, int);
+#endif // __sun__
+
 void do_blake_hash(const void* input, size_t len, char* output) {
 	blake256_hash((uint8_t*)output, (const uint8_t*)input, len);
 }
@@ -247,6 +254,11 @@ cryptonight_ctx* cryptonight_alloc_ctx(size_t use_fast_mem, size_t use_mlock, al
 #elif defined(__FreeBSD__)
 	ptr->long_state = (uint8_t*)mmap(0, hashMemSize, PROT_READ | PROT_WRITE,
 		MAP_PRIVATE | MAP_ANONYMOUS | MAP_ALIGNED_SUPER | MAP_PREFAULT_READ, -1, 0);
+#elif defined(__sun__)
+    int fd = open("/dev/zero", O_RDWR);
+    fcntl(fd, F_SETFD, FD_CLOEXEC);
+    ptr->long_state = (uint8_t*)mmap(0, MEMORY, PROT_READ | PROT_WRITE,
+                    MAP_PRIVATE, fd, 0);
 #else
 	ptr->long_state = (uint8_t*)mmap(0, hashMemSize, PROT_READ | PROT_WRITE,
 		MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | MAP_POPULATE, 0, 0);
@@ -261,8 +273,12 @@ cryptonight_ctx* cryptonight_alloc_ctx(size_t use_fast_mem, size_t use_mlock, al
 
 	ptr->ctx_info[0] = 1;
 
-	if(madvise(ptr->long_state, hashMemSize, MADV_RANDOM|MADV_WILLNEED) != 0)
-		msg->warning = "madvise failed";
+    if(madvise(
+#if defined(__sun__)
+    (caddr_t)
+#endif
+    ptr->long_state, MEMORY, MADV_RANDOM|MADV_WILLNEED) != 0)
+    msg->warning = "madvise failed";
 
 	ptr->ctx_info[1] = 0;
 	if(use_mlock != 0 && mlock(ptr->long_state, hashMemSize) != 0)
